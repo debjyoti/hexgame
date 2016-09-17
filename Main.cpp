@@ -2,7 +2,6 @@
 #include "HexBoard.h"
 
 int main() {
-    srand (time(NULL));                      //just for testing
 #ifdef DEBUG
     const unsigned short board_size = 5;
 #else
