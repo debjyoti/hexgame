@@ -1,5 +1,4 @@
 #include <algorithm>   //random shuffle
-#include <cassert>
 #include "AI.h"
 #include "SetUnion.h"
 
@@ -15,28 +14,17 @@ AI::AI(HexBoard& hb)
     for(int row=0; row<hb.board_size; row++){
         for(int col=0; col<hb.board_size; col++){
             int pos = get_base_index(row, col);
-            if(col<hb.board_size-1){                                       //not right edge
-                neighbors.at(pos).push_back(pos+1);                        //hex to the right
+            if(col<hb.board_size-1){                  //not right edge
+                neighbors.at(pos).push_back(pos+1);   //hex to the right
                 if(row>0){
-                    neighbors.at(pos).push_back(                           //hex to the top right
+                    neighbors.at(pos).push_back(      //hex to the top right
                         get_base_index(row-1, col+1));
                 }
             }
-            if(row<hb.board_size-1){                                          //not the bottom edge
+            if(row<hb.board_size-1){                  //not the bottom edge
                 neighbors.at(pos).push_back(
-                        get_base_index(row+1, col));                   //hex to the bottom
+                        get_base_index(row+1, col));  //hex to the bottom
             }
-            /*  not adding these 2 neighbors to reduce redundancy
-            if(col>0){                                                     //not the left edge
-                hex_at(row,col)->add_neighbor(hex_at(row,col-1));          //hex to the left
-                if(row<board_size-1){
-                    hex_at(row,col)->add_neighbor(hex_at(row+1,col-1));    //hex to the bottom left    
-                }
-            }
-            if(row>0){                                                     //not the top edge    
-                hex_at(row,col)->add_neighbor(hex_at(row-1,col));          //hex to the top    
-            }
-            */
         }
     }
 }
@@ -49,23 +37,28 @@ void AI::calculate_next_move(unsigned short &x, unsigned short &y,
 {
     double win_chance, max_chance = 0.0;
     int best_move=0;
-    //refresh_simulation_board();
+
     update_simulation_board(get_base_index(prev_x, prev_y),
                                 board_ref.player_symbol);
-    for(int i=0; i<size; i++){   //place ai move in each empty hex
-        if(sb[i]!='.') continue;
-        win_chance = montecarlo_simulate(i, 1000);
-        if(win_chance>max_chance){
-            max_chance = win_chance;
-            best_move = i;
+    //place ai move in each empty hex
+    for(int i=0; i<size; i++){
+        if(sb[i]=='.'){       //empty
+            win_chance = montecarlo_simulate(i, 1000); //update i and run mc 1000 times
+            if(win_chance>max_chance){
+                max_chance = win_chance;
+                best_move = i;
+            }
         }
     }
     get_x_y(best_move, x, y);
     update_simulation_board(get_base_index(x, y),
                                         board_ref.ai_symbol);
-    print_sim_board();
+    //print_sim_board(); //DEBUG
 }
 
+/* Makes AI move at pos on a copy of the simulation board.
+ * Then it plays the game at random 'count' times
+ * It returns the probability of win */
 double AI::montecarlo_simulate(int pos, int count)
 {
     std::vector<char> b = sb;           //copy of simulation board
@@ -93,10 +86,12 @@ double AI::montecarlo_simulate(int pos, int count)
         if(ai_won(b)) win_count++;                //check if ai won
     }
     chance = (double)win_count/count;
-    std::cout << "DEBUG: chance = "<< chance << std::endl;
+    //std::cout << "DEBUG: chance = "<< chance << std::endl;
     return chance;
 }
 
+/* Returns true if AI(O-vertical) has won the game on board
+ * Used by montecarlo_simulate function. */
 bool AI::ai_won(std::vector<char> &board)
 {
     SetUnion s(size+2);  //last 2 for top and bottom
@@ -104,7 +99,6 @@ bool AI::ai_won(std::vector<char> &board)
     int bottom_connect = size+1;  //last field
     for(int i=0; i<size; i++){
         char c = board.at(i);
-        assert(c!='.'); //board should not have empty hex at this stage TODO: remove
         if(c=='O'){
             if(i<board_ref.board_size)         //this hex is on the top edge
                 s.join(i,top_connect);         //join this hex to top_connect
@@ -124,7 +118,7 @@ bool AI::ai_won(std::vector<char> &board)
 }
 
 /*
-void AI::refresh_simulation_board() //cant we just capture the prev move? TODO
+void AI::refresh_simulation_board() //not required
 {
     //std::fill(sb.begin(), sb.end(), '.');      //empty the board
     for(int row=0; row<board_ref.board_size; row++){
