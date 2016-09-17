@@ -11,15 +11,19 @@
 class AI {
   public:
     AI(HexBoard& hb)                            //constructor
-    : board(hb),
-      size(hb.board_size*hb.board_size) {}
+    : board_ref(hb),
+      size(hb.board_size*hb.board_size) {
+          sb = vector<char>(size, '.');         //empty board
+    }
 
     bool calculate_next_move(unsigned short &x, unsigned short &y);
 
   private:
-    HexBoard &board;                            //reference to the actual board
+    HexBoard &board_ref;                        //reference to the actual board
     int size;                                   //size of the board
-    vector<int> sb;                             //simulation board
+    std::vector<char> sb;                       //simulation board
+    std::unordered_set<int> vertical_boundary;  //contains top & bottom row hex
+    std::unordered_set<int> horizontal_boundary;//contains left & right column
 
     unsigned short get_base_index(unsigned short x, unsigned short y) const{
         return x*board.board_size + y;
