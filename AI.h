@@ -3,7 +3,6 @@
 
 #include "HexBoard.h"
 #include <vector>
-#include <unordered_set>
 
 /* AI(artificial intelligence) class represents the computer player
  * of the game. The only public method exposed is calculate_next_move.
@@ -20,8 +19,7 @@ class AI {
     HexBoard &board_ref;                        //reference to the actual board
     int size;                                   //size of the board
     std::vector<char> sb;                       //simulation board
-    std::unordered_set<int> vertical_boundary;  //contains top & bottom row hex
-    std::unordered_set<int> horizontal_boundary;//contains left & right column
+    std::vector< std::vector<int> > neighbors;  //neighbors
 
     void get_x_y(int i, unsigned short &x, unsigned short &y) const {
         x=i/board_ref.board_size;
@@ -44,7 +42,7 @@ class AI {
 
     double montecarlo_simulate(int pos, int count);
 
-    bool ai_won(std::vector<char> board);
+    bool ai_won(std::vector<char> &board);
     
     void print_sim_board() {
         std::cout << "DEBUG: sim board = ";

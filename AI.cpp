@@ -1,6 +1,7 @@
 #include <algorithm>   //random shuffle
-#include <numeric>     //iota
+#include <cassert>
 #include "AI.h"
+#include "SetUnion.h"
 
 //constructor
 AI::AI(HexBoard& hb)
@@ -9,20 +10,34 @@ AI::AI(HexBoard& hb)
 {
     sb = std::vector<char>(size, '.');         //empty board
 
-    //populate vertical boundary
-    std::vector<int> top_row(hb.board_size);
-    std::iota(top_row.begin(), top_row.end(), 0);
-    vertical_boundary.insert(top_row.begin(), top_row.end());
-    std::vector<int> bottom_row(hb.board_size);
-    std::iota(bottom_row.begin(), bottom_row.end(),
-                        (hb.board_size*hb.board_size)-hb.board_size);
-    vertical_boundary.insert(bottom_row.begin(), bottom_row.end());
-
-    //populate horizontal boundary
+    //populate the neighbors matrix
+    neighbors = std::vector<std::vector<int>>(size);
     for(int row=0; row<hb.board_size; row++){
-        int leftmost_pos = hb.board_size*row;
-        horizontal_boundary.insert(leftmost_pos);
-        horizontal_boundary.insert(leftmost_pos+hb.board_size-1);
+        for(int col=0; col<hb.board_size; col++){
+            int pos = get_base_index(row, col);
+            if(col<hb.board_size-1){                                       //not right edge
+                neighbors.at(pos).push_back(pos+1);                        //hex to the right
+                if(row>0){
+                    neighbors.at(pos).push_back(                           //hex to the top right
+                        get_base_index(row-1, col+1));
+                }
+            }
+            if(row<hb.board_size-1){                                          //not the bottom edge
+                neighbors.at(pos).push_back(
+                        get_base_index(row+1, col));                   //hex to the bottom
+            }
+            /*  not adding these 2 neighbors to reduce redundancy
+            if(col>0){                                                     //not the left edge
+                hex_at(row,col)->add_neighbor(hex_at(row,col-1));          //hex to the left
+                if(row<board_size-1){
+                    hex_at(row,col)->add_neighbor(hex_at(row+1,col-1));    //hex to the bottom left    
+                }
+            }
+            if(row>0){                                                     //not the top edge    
+                hex_at(row,col)->add_neighbor(hex_at(row-1,col));          //hex to the top    
+            }
+            */
+        }
     }
 }
 
@@ -82,10 +97,30 @@ double AI::montecarlo_simulate(int pos, int count)
     return chance;
 }
 
-bool AI::ai_won(std::vector<char> board)
+bool AI::ai_won(std::vector<char> &board)
 {
-    //implement the union-find algo on board : TODO
-    return true;
+    SetUnion s(size+2);  //last 2 for top and bottom
+    int top_connect = size;  //2nd last field (note that it starts from 0
+    int bottom_connect = size+1;  //last field
+    for(int i=0; i<size; i++){
+        char c = board.at(i);
+        assert(c!='.'); //board should not have empty hex at this stage TODO: remove
+        if(c=='O'){
+            if(i<board_ref.board_size)         //this hex is on the top edge
+                s.join(i,top_connect);         //join this hex to top_connect
+            else if(i>=board_ref.board_size*(board_ref.board_size-1)) //this hex is on bottom edge
+                s.join(i, bottom_connect);
+            for(int n: neighbors.at(i)){       //loop through the neighbors
+                if(board[n]==c){               //neighbor has same value
+                    s.join(i,n);               //join this set with neighbors
+                }
+            }
+        }
+    }
+    if(s.connected(top_connect, bottom_connect))
+        return true;
+    else
+        return false;
 }
 
 /*
