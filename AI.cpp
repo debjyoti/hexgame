@@ -1,10 +1,34 @@
 #include <algorithm>   //random shuffle
+#include <numeric>     //iota
 #include "AI.h"
 
-/* AI is implemented using Monte Carlo simulation */
+//constructor
+AI::AI(HexBoard& hb)
+    : board_ref(hb),
+      size(hb.board_size*hb.board_size)
+{
+    sb = std::vector<char>(size, '.');         //empty board
 
-/* finds the optimum next move for the AI. It returns the x and 
- * y value of the move in the parameter (passed by reference) */
+    //populate vertical boundary
+    std::vector<int> top_row(hb.board_size);
+    std::iota(top_row.begin(), top_row.end(), 0);
+    vertical_boundary.insert(top_row.begin(), top_row.end());
+    std::vector<int> bottom_row(hb.board_size);
+    std::iota(bottom_row.begin(), bottom_row.end(),
+                        (hb.board_size*hb.board_size)-hb.board_size);
+    vertical_boundary.insert(bottom_row.begin(), bottom_row.end());
+
+    //populate horizontal boundary
+    for(int row=0; row<hb.board_size; row++){
+        int leftmost_pos = hb.board_size*row;
+        horizontal_boundary.insert(leftmost_pos);
+        horizontal_boundary.insert(leftmost_pos+hb.board_size-1);
+    }
+}
+
+/* Finds the optimum next move for the AI. It returns the x and 
+ * y value of the move in the parameter (passed by reference)
+ * It is implemented using Monte Carlo simulation */
 void AI::calculate_next_move(unsigned short &x, unsigned short &y,
                      unsigned short prev_x, unsigned short prev_y)
 {

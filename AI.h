@@ -11,11 +11,7 @@
  * The AI is implemented using Monte Carlo simulation*/
 class AI {
   public:
-    AI(HexBoard& hb)                            //constructor
-    : board_ref(hb),
-      size(hb.board_size*hb.board_size) {
-          sb = std::vector<char>(size, '.');         //empty board
-    }
+    AI(HexBoard& hb);                           //constructor
 
     void calculate_next_move(unsigned short &x, unsigned short &y,
                      unsigned short prev_x, unsigned short prev_y);
