@@ -81,6 +81,7 @@ bool HexBoard::accept_user_input(unsigned short &x, unsigned short &y)
 
 /* Writes the hexboard to ostream os in ascii-art :)
  * os is cout by default (refer .h file) */
+ //TODO: create GUI
 void HexBoard::print(std::ostream &os) const
 {
     int space_count =0;                           //how many spaces to pad at left
@@ -127,13 +128,14 @@ bool HexBoard::play()
 {
     unsigned short user_x, user_y, my_x, my_y;
     AI ai(*this);
+    std::cout << "How To Play:\n You need to connect the board from left to right.\n";
     while(1){
         if(empty_hex_count==0) return false;           //if count becomes 0, no more hex left. Game Draw.
         accept_user_input(user_x, user_y);             //get player's move
         hex_at(user_x,user_y)->set_val(player_symbol); //make the move om the board
         empty_hex_count--;                             //decrement hex count
         if(hex_at(user_x,user_y)->is_horizontal_connected()){   //check exit condition
-            std::cout << "Blue(X) Won!!!\n";
+            std::cout << "Player Won!!!\n";
             return true;
         }
         if(empty_hex_count==0) return false;
@@ -142,7 +144,7 @@ bool HexBoard::play()
         hex_at(my_x,my_y)->set_val(ai_symbol);         //make the move on the board
         empty_hex_count--;                                //decrement the hex count
         if(hex_at(my_x,my_y)->is_vertical_connected()){   //check exit condition
-            std::cout << "Red(O) won!!!\n";
+            std::cout << "AI won!!!\n";
             return true;
         }
     }

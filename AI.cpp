@@ -32,6 +32,7 @@ AI::AI(HexBoard& hb)
 /* Finds the optimum next move for the AI. It returns the x and 
  * y value of the move in the parameter (passed by reference)
  * It is implemented using Monte Carlo simulation */
+//TODO: returning by params doesn't seem to be good practice. Return std::pair.
 void AI::calculate_next_move(unsigned short &x, unsigned short &y,
                      unsigned short prev_x, unsigned short prev_y)
 {
@@ -57,7 +58,7 @@ void AI::calculate_next_move(unsigned short &x, unsigned short &y,
 }
 
 /* Makes AI move at pos on a copy of the simulation board.
- * Then it plays the game at random 'count' times
+ * Then it plays the game at random, 'count' times
  * It returns the probability of win */
 double AI::montecarlo_simulate(int pos, int count)
 {
@@ -95,7 +96,7 @@ double AI::montecarlo_simulate(int pos, int count)
 bool AI::ai_won(std::vector<char> &board)
 {
     SetUnion s(size+2);  //last 2 for top and bottom
-    int top_connect = size;  //2nd last field (note that it starts from 0
+    int top_connect = size;  //2nd last field -note that it starts from 0
     int bottom_connect = size+1;  //last field
     for(int i=0; i<size; i++){
         char c = board.at(i);

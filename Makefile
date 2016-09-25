@@ -2,4 +2,4 @@ CXX=g++
 CXXFLAGS=-std=c++11
 
 hex: *.cpp
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) -DDEBUG $(CXXFLAGS) $^ -o $@
